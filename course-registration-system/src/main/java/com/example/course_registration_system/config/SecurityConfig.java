@@ -1,6 +1,5 @@
 package com.example.course_registration_system.config;
 
-import com.example.course_registration_system.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +12,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,9 +36,6 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ==============================
-                // CORS
-                // ==============================
                 .cors(cors -> {})
 
                 .sessionManagement(session ->
@@ -51,9 +46,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ==============================
-                        // PUBLIC APIs
-                        // ==============================
+                        // Public endpoints
                         .requestMatchers(
                                 "/users/register",
                                 "/users/verify-otp",
@@ -61,75 +54,58 @@ public class SecurityConfig {
                                 "/auth/login"
                         ).permitAll()
 
-
-                        // ==============================
-                        // COURSE APIs
-                        // ==============================
-
-                        // Anyone logged in can view courses
+                        // Course viewing
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/courses",
                                 "/courses/**"
                         ).authenticated()
 
-                        // Only ADMIN can create
+                        // Admin course operations
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/courses"
                         ).hasRole("ADMIN")
 
-                        // Only ADMIN can update
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/courses/**"
                         ).hasRole("ADMIN")
 
-                        // Only ADMIN can delete
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/courses/**"
                         ).hasRole("ADMIN")
 
-
-                        // ==============================
-                        // REGISTRATION APIs
-                        // ==============================
-
-                        // ADMIN can view registrations for a course
+                        // Admin course registrations
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/registrations/course/**"
                         ).hasRole("ADMIN")
 
-                        // STUDENT can view their own courses
+                        // Student registration operations
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/registrations/my-courses"
                         ).hasRole("STUDENT")
 
-                        // STUDENT can register
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/registrations/**"
                         ).hasRole("STUDENT")
 
-                        // STUDENT can drop
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/registrations/**"
                         ).hasRole("STUDENT")
 
-
-                        // ==============================
-                        // USER APIs
-                        // ==============================
-
+                        // Profile
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/users/profile"
                         ).authenticated()
 
+                        // Admin student management
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/users/students"
@@ -140,11 +116,7 @@ public class SecurityConfig {
                                 "/users/students/**"
                         ).hasRole("ADMIN")
 
-
-                        // ==============================
-                        // ADMIN DASHBOARD
-                        // ==============================
-
+                        // Admin dashboard
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/users/admin/dashboard"
@@ -156,28 +128,22 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
                         .requestMatchers(
-                                HttpMethod.GET,
                                 "/users/admin/dashboard/most-popular-course"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(
-                                HttpMethod.GET,
                                 "/users/admin/dashboard/recent-students"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(
-                                HttpMethod.GET,
                                 "/users/admin/dashboard/recent-registrations"
                         ).hasRole("ADMIN")
 
-
-                        // ==============================
-                        // EVERYTHING ELSE
-                        // ==============================
-
+                        // Any other request
                         .anyRequest().authenticated()
                 )
 
+                // JWT filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -186,18 +152,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-    // ==============================
-    // CORS CONFIGURATION
-    // ==============================
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                Arrays.asList("http://localhost:5173")
+                Arrays.asList(
+                        "http://localhost:5173",
+                        "https://course-registration-system-tau.vercel.app"
+                )
         );
 
         configuration.setAllowedMethods(
@@ -226,11 +191,6 @@ public class SecurityConfig {
 
         return source;
     }
-
-
-    // ==============================
-    // AUTHENTICATION MANAGER
-    // ==============================
 
     @Bean
     public AuthenticationManager authenticationManager(
