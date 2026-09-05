@@ -24,3 +24,5 @@ Thumbs.db
 
 # Logs
 *.log
+# Database backups
+course_registration_backup.sql

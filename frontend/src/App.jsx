@@ -88,7 +88,7 @@ function App() {
     try {
 
       const response = await fetch(
-          "http://localhost:8080/auth/login",
+          `${API_URL}/auth/login`,
           {
             method: "POST",
 

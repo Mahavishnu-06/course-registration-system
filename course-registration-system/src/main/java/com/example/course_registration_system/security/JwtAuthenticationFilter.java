@@ -1,22 +1,26 @@
-package com.example.course_registration_system.security;
+package com.example.course_registration_system.config;
+
 import com.example.course_registration_system.service.CustomUserDetailsService;
 import com.example.course_registration_system.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter{
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     @Autowired
     private JwtService jwtService;
 
@@ -36,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         String email = null;
         String jwt = null;
 
+        // Check Authorization header
         if (authHeader != null &&
                 authHeader.startsWith("Bearer ")) {
 
@@ -44,12 +49,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
             try {
                 email = jwtService.extractEmail(jwt);
             } catch (Exception e) {
-                // Invalid JWT
+                // Invalid JWT token
             }
         }
 
+        // Authenticate user if email is found
         if (email != null &&
-                SecurityContextHolder.getContext()
+                SecurityContextHolder
+                        .getContext()
                         .getAuthentication() == null) {
 
             UserDetails userDetails =
@@ -69,7 +76,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
                                 .buildDetails(request)
                 );
 
-                SecurityContextHolder.getContext()
+                SecurityContextHolder
+                        .getContext()
                         .setAuthentication(authentication);
             }
         }
