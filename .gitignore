@@ -1,0 +1,26 @@
+# Environment variables
+.env
+*.env
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# React/Vite build
+frontend/dist/
+
+# Maven
+target/
+course-registration-system/target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
