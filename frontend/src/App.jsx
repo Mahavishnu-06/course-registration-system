@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-
+import API_URL from "./api";
 import StudentDashboard from "./StudentDashboard";
 import AdminDashboard from "./AdminDashboard";
 import AdminCourses from "./AdminCourses";
