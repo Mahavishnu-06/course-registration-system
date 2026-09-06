@@ -21,6 +21,13 @@ function StudentDashboard() {
     const [actionLoading, setActionLoading] = useState(false);
     const [activeNav, setActiveNav] = useState("profile-section");
 
+    // ==============================
+    // DROP COURSE MODAL
+    // ==============================
+
+    const [showDropConfirm, setShowDropConfirm] = useState(false);
+    const [selectedRegistrationId, setSelectedRegistrationId] = useState(null);
+
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
@@ -259,13 +266,14 @@ function StudentDashboard() {
     // DROP COURSE
     // ==============================
 
-    const handleDropCourse = async (registrationId) => {
-        const confirmDrop =
-            window.confirm(
-                "Are you sure you want to drop this course?"
-            );
+    const handleDropCourse = (registrationId) => {
+        setSelectedRegistrationId(registrationId);
+        setShowDropConfirm(true);
+    };
 
-        if (!confirmDrop) {
+    const confirmDropCourse = async () => {
+
+        if (!selectedRegistrationId) {
             return;
         }
 
@@ -274,7 +282,7 @@ function StudentDashboard() {
             setActionLoading(true);
 
             const response = await fetch(
-                `${API_URL}/registrations/${registrationId}`,
+                `${API_URL}/registrations/${selectedRegistrationId}`,
                 {
                     method: "DELETE",
 
@@ -298,6 +306,9 @@ function StudentDashboard() {
                 "Course dropped successfully!"
             );
 
+            setShowDropConfirm(false);
+            setSelectedRegistrationId(null);
+
             await fetchDashboardData();
 
         } catch (error) {
@@ -314,6 +325,19 @@ function StudentDashboard() {
         } finally {
             setActionLoading(false);
         }
+    };
+
+    // ==============================
+    // CANCEL DROP
+    // ==============================
+
+    const cancelDropCourse = () => {
+        if (actionLoading) {
+            return;
+        }
+
+        setShowDropConfirm(false);
+        setSelectedRegistrationId(null);
     };
 
     // ==============================
@@ -352,6 +376,7 @@ function StudentDashboard() {
     if (loading) {
         return (
             <div className="dashboard-loading">
+
                 <div className="loading-spinner"></div>
 
                 <h2>
@@ -361,6 +386,7 @@ function StudentDashboard() {
                 <p>
                     Please wait a moment
                 </p>
+
             </div>
         );
     }
@@ -372,6 +398,7 @@ function StudentDashboard() {
     if (error) {
         return (
             <div className="dashboard-error">
+
                 <div className="error-icon">
                     !
                 </div>
@@ -387,6 +414,7 @@ function StudentDashboard() {
                 <button onClick={handleLogout}>
                     Back to Login
                 </button>
+
             </div>
         );
     }
@@ -411,6 +439,7 @@ function StudentDashboard() {
                     </div>
 
                     <div>
+
                         <h1>
                             Student Dashboard
                         </h1>
@@ -423,6 +452,7 @@ function StudentDashboard() {
                                 </strong>
                             </p>
                         )}
+
                     </div>
 
                 </div>
@@ -480,6 +510,7 @@ function StudentDashboard() {
                                 {myCourses.length}
                             </span>
                         )}
+
                     </button>
 
                     <button
@@ -506,6 +537,7 @@ function StudentDashboard() {
                 <section className="welcome-banner">
 
                     <div>
+
                         <span className="welcome-label">
                             STUDENT PORTAL
                         </span>
@@ -519,9 +551,11 @@ function StudentDashboard() {
                             registrations, and keep your profile
                             information up to date.
                         </p>
+
                     </div>
 
                     <div className="welcome-stat">
+
                         <strong>
                             {myCourses.length}
                         </strong>
@@ -529,6 +563,7 @@ function StudentDashboard() {
                         <span>
                             Active Courses
                         </span>
+
                     </div>
 
                 </section>
@@ -547,6 +582,7 @@ function StudentDashboard() {
                                 : "action-message error-message"
                         }
                     >
+
                         <span>
                             {actionMessage.toLowerCase().includes(
                                 "success"
@@ -556,6 +592,7 @@ function StudentDashboard() {
                         </span>
 
                         {actionMessage}
+
                     </div>
                 )}
 
@@ -572,6 +609,7 @@ function StudentDashboard() {
                         </div>
 
                         <div>
+
                             <span>
                                 Department
                             </span>
@@ -579,6 +617,7 @@ function StudentDashboard() {
                             <strong>
                                 {profile?.department || "N/A"}
                             </strong>
+
                         </div>
 
                     </div>
@@ -590,6 +629,7 @@ function StudentDashboard() {
                         </div>
 
                         <div>
+
                             <span>
                                 Academic Year
                             </span>
@@ -597,6 +637,7 @@ function StudentDashboard() {
                             <strong>
                                 Year {profile?.year || "N/A"}
                             </strong>
+
                         </div>
 
                     </div>
@@ -608,6 +649,7 @@ function StudentDashboard() {
                         </div>
 
                         <div>
+
                             <span>
                                 Available Courses
                             </span>
@@ -615,6 +657,7 @@ function StudentDashboard() {
                             <strong>
                                 {courses.length}
                             </strong>
+
                         </div>
 
                     </div>
@@ -626,6 +669,7 @@ function StudentDashboard() {
                         </div>
 
                         <div>
+
                             <span>
                                 My Registrations
                             </span>
@@ -633,6 +677,7 @@ function StudentDashboard() {
                             <strong>
                                 {myCourses.length}
                             </strong>
+
                         </div>
 
                     </div>
@@ -679,11 +724,13 @@ function StudentDashboard() {
                         <div className="profile-card">
 
                             <div className="profile-avatar">
+
                                 {profile.name
                                     ? profile.name
                                         .charAt(0)
                                         .toUpperCase()
                                     : "S"}
+
                             </div>
 
                             <div className="profile-details">
@@ -1227,6 +1274,139 @@ function StudentDashboard() {
                 </section>
 
             </main>
+
+            {/* ==============================
+                DROP COURSE CONFIRMATION MODAL
+            ============================== */}
+
+            {showDropConfirm && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.55)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                        padding: "20px",
+                    }}
+                >
+
+                    <div
+                        style={{
+                            backgroundColor: "#ffffff",
+                            width: "100%",
+                            maxWidth: "450px",
+                            borderRadius: "16px",
+                            padding: "30px",
+                            boxShadow:
+                                "0 20px 50px rgba(0, 0, 0, 0.25)",
+                            textAlign: "center",
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                width: "60px",
+                                height: "60px",
+                                borderRadius: "50%",
+                                backgroundColor: "#fff4e5",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                margin: "0 auto 18px",
+                                fontSize: "28px",
+                            }}
+                        >
+                            ⚠
+                        </div>
+
+                        <h2
+                            style={{
+                                margin: "0 0 10px",
+                                fontSize: "24px",
+                                color: "#1f2937",
+                            }}
+                        >
+                            Drop Course
+                        </h2>
+
+                        <p
+                            style={{
+                                margin: "0 0 25px",
+                                color: "#6b7280",
+                                fontSize: "15px",
+                                lineHeight: "1.6",
+                            }}
+                        >
+                            Are you sure you want to drop this course?
+                            <br />
+                            This action cannot be undone.
+                        </p>
+
+                        <div
+                            style={{
+                                display: "flex",
+                                gap: "12px",
+                                justifyContent: "center",
+                            }}
+                        >
+
+                            <button
+                                type="button"
+                                onClick={cancelDropCourse}
+                                disabled={actionLoading}
+                                style={{
+                                    padding: "12px 24px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #d1d5db",
+                                    backgroundColor: "#ffffff",
+                                    color: "#374151",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    fontSize: "14px",
+                                }}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={confirmDropCourse}
+                                disabled={actionLoading}
+                                style={{
+                                    padding: "12px 24px",
+                                    borderRadius: "8px",
+                                    border: "none",
+                                    backgroundColor: "#dc2626",
+                                    color: "#ffffff",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    fontSize: "14px",
+                                }}
+                            >
+
+                                {actionLoading ? (
+                                    <>
+                                        <span className="button-spinner"></span>
+                                        Dropping...
+                                    </>
+                                ) : (
+                                    "Drop Course"
+                                )}
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
 
         </div>
     );
